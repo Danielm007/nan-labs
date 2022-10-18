@@ -1,26 +1,16 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useLoadScript } from "@react-google-maps/api";
+import { Map } from "./components/map/Map";
+import { Loading } from "./components/UI/Loading";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: "AIzaSyDACwUsQYtP6_VcRi_z6by9d2U44rs1dsY",
+    libraries: ["places"],
+  });
+
+  if (!isLoaded) return <Loading />;
+
+  return <Map />;
 }
 
 export default App;
