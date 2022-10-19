@@ -18,7 +18,27 @@ code {
 }
 
 .map {
-  height: 80%;
+  height: 90%;
+}
+
+.special {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.autocomplete {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: auto;
+  padding: 10px;
+}
+
+@media (min-width: 768px) {
+  .autocomplete {
+    flex-direction: row;
+    justify-content: space-around;
+  }
 }
 
 *,

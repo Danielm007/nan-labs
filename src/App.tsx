@@ -1,13 +1,18 @@
 import { useLoadScript } from "@react-google-maps/api";
-import { Map } from "./components/map/Map";
-import { Loading } from "./components/UI/Loading";
+import { useMemo } from "react";
+import { Map } from "./components/map/Map.component";
+import { Loading } from "./components/UI/Loading.component";
 
 function App() {
+  // Create a library state so we don't have warnings in the console
+  const libraries: ["places"] = useMemo(() => ["places"], []);
+  // const [libraries, setLibraries] = useState<["places"]>(["places"]);
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: "AIzaSyDACwUsQYtP6_VcRi_z6by9d2U44rs1dsY",
-    libraries: ["places"],
+    googleMapsApiKey: process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY,
+    libraries,
   });
 
+  // Verify if map is ready
   if (!isLoaded) return <Loading />;
 
   return <Map />;

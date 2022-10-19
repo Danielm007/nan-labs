@@ -8,28 +8,20 @@ import usePlacesAutoComplete, {
   getLatLng,
 } from "use-places-autocomplete";
 
+// Interface for props
 interface Props {
   label: string;
   icon: JSX.Element | null;
+  setPlace: (position: google.maps.LatLngLiteral) => void;
 }
-
-// Create a type for option
-type Place = {
-  id: string;
-  label: string;
-};
-
-type Option = string;
 
 let options: string[] = [];
 
-export const AutoComplete = ({ label, icon }: Props) => {
+export const AutoComplete = ({ label, icon, setPlace }: Props) => {
   // setOption
   const [option, setOption] = useState<string | null>(null);
-  const [place, setPlace] = useState<Place | null>(null);
   // Configure results to just airports within US
   const {
-    ready,
     value,
     setValue,
     suggestions: { data },
@@ -41,13 +33,24 @@ export const AutoComplete = ({ label, icon }: Props) => {
     },
   });
 
+  // handleSelect
+  const handleSelect = async (event: any, newValue: string | null) => {
+    if (!newValue) return;
+    setOption(newValue);
+    clearSuggestions();
+    const results = await getGeocode({ address: newValue });
+    const { lat, lng } = await getLatLng(results[0]);
+    setPlace({ lat, lng });
+  };
+
   // Populate data with autocomplete results
   options = data.map((result) => result.description);
 
   return (
     <Autocomplete
       style={{
-        minWidth: "400px",
+        width: "90%",
+        margin: "0 auto",
       }}
       options={options}
       renderInput={(params) => (
@@ -71,14 +74,9 @@ export const AutoComplete = ({ label, icon }: Props) => {
       // Change value of input
       inputValue={value}
       // Handle change when option is clicked
-      onChange={(event: any, newValue: string | null) => {
-        setOption(newValue);
-      }}
+      onChange={handleSelect}
       // Set value to autocomplete component with option selected
       value={option}
     />
   );
 };
-
-// value={place}
-// onChange={(event: any, newValue: Place | null) => setPlace(newValue)}
