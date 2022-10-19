@@ -1,7 +1,13 @@
 import { FlightLand, FlightTakeoff } from "@mui/icons-material";
 import { Box } from "@mui/material";
-import { GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  Marker,
+  DirectionsRenderer,
+  Polyline,
+} from "@react-google-maps/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { calculateDistance } from "../../helpers/calculateDistance";
 import { AutoComplete } from "../autocomplete/AutoComplete.component";
 import { Distance } from "../UI/Distance.component";
 
@@ -19,8 +25,11 @@ export const Map = () => {
   // Create a ref for the map
   const mapRef = useRef<GoogleMap>();
 
-  // Route
+  // Route using car
   const [directions, setDirections] = useState<DirectionsResult>();
+
+  // Distance by plane
+  const [distance, setDistance] = useState<number | null>();
 
   // I set the initial point at JF Kennedy Airport
   const center = useMemo<LatLngLiteral>(
@@ -52,6 +61,7 @@ export const Map = () => {
         }
       }
     );
+    setDistance(calculateDistance(from.lat, from.lng, to.lat, to.lng));
   }, [from, to]);
 
   // Plot the route between airports
@@ -79,30 +89,40 @@ export const Map = () => {
           }}
         />
       </div>
+
+      <GoogleMap
+        zoom={10}
+        center={center}
+        mapContainerClassName="map-container"
+        options={options}
+        onLoad={onLoad}
+      >
+        {from && to && (
+          <Polyline
+            path={[to, from]}
+            options={{ ...polyCofiguration, geodesic: true }}
+          />
+        )}
+        {from && <Marker position={from} />}
+        {to && <Marker position={to} />}
+        {directions && (
+          <DirectionsRenderer
+            directions={directions}
+            options={{
+              polylineOptions: { zIndex: 50, strokeColor: "#1976d2" },
+            }}
+          />
+        )}
+      </GoogleMap>
       <Box>
-        <p></p>
-        {directions && <Distance leg={directions.routes[0].legs[0]} />}
+        {directions && distance && (
+          <Distance leg={directions.routes[0].legs[0]} distance={distance} />
+        )}
       </Box>
-      <div className="map">
-        <GoogleMap
-          zoom={10}
-          center={center}
-          mapContainerClassName="map-container"
-          options={options}
-          onLoad={onLoad}
-        >
-          {from && <Marker position={from} />}
-          {to && <Marker position={to} />}
-          {directions && (
-            <DirectionsRenderer
-              directions={directions}
-              options={{
-                polylineOptions: { zIndex: 50, strokeColor: "#1976d2" },
-              }}
-            />
-          )}
-        </GoogleMap>
-      </div>
     </Box>
   );
+};
+
+const polyCofiguration = {
+  strokeColor: "#d11d1d",
 };

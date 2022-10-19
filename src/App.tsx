@@ -8,7 +8,7 @@ function App() {
   const libraries: ["places"] = useMemo(() => ["places"], []);
   // const [libraries, setLibraries] = useState<["places"]>(["places"]);
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY,
+    googleMapsApiKey: process.env.REACT_APP_PUBLIC_GOOGLE_API_KEY as string,
     libraries,
   });
 
