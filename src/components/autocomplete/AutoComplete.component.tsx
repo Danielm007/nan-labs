@@ -13,11 +13,12 @@ interface Props {
   label: string;
   icon: JSX.Element | null;
   setPlace: (position: google.maps.LatLngLiteral) => void;
+  filter: string;
 }
 
 let options: string[] = [];
 
-export const AutoComplete = ({ label, icon, setPlace }: Props) => {
+export const AutoComplete = ({ label, icon, setPlace, filter }: Props) => {
   // setOption
   const [option, setOption] = useState<string | null>(null);
   // Configure results to just airports within US
@@ -29,6 +30,7 @@ export const AutoComplete = ({ label, icon, setPlace }: Props) => {
   } = usePlacesAutoComplete({
     requestOptions: {
       componentRestrictions: { country: "us" },
+      language: "en",
       types: ["airport"],
     },
   });
@@ -43,8 +45,15 @@ export const AutoComplete = ({ label, icon, setPlace }: Props) => {
     setPlace({ lat, lng });
   };
 
-  // Populate data with autocomplete results
-  options = data.map((result) => result.description);
+  // We are going to receive a string of type => Alabama - AL from state
+  // We can use array methods to apply a filter
+  const [name, state_code] = filter.split(" | ");
+  options = data
+    .filter(
+      (st) =>
+        st.description.includes(name) || st.description.includes(state_code)
+    )
+    .map((result) => result.description);
 
   return (
     <Autocomplete

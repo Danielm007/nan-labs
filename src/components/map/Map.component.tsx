@@ -10,12 +10,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { calculateDistance } from "../../helpers/calculateDistance";
 import { AutoComplete } from "../autocomplete/AutoComplete.component";
 import { Distance } from "../UI/Distance.component";
+import { apiEndpoint } from "../../api/apiEndpoint";
+import { SelectStates, Option } from "../autocomplete/SelectStates.component";
 
 type LatLngLiteral = google.maps.LatLngLiteral;
 type DirectionsResult = google.maps.DirectionsResult;
 type MapOptions = google.maps.MapOptions;
 
 export const Map = () => {
+  // States
+  const [states, setStates] = useState<Option[]>([]);
+
+  //State selected
+  const [state, setState] = useState<string>("");
+
   // From where people are taking the plane
   const [from, setFrom] = useState<LatLngLiteral>();
 
@@ -69,27 +77,51 @@ export const Map = () => {
     fetchDirections();
   }, [from, to, fetchDirections]);
 
+  // Fetch states from API
+  const fetchStates = useCallback(async () => {
+    try {
+      const { data } = await apiEndpoint.post("/countries/states", {
+        country: "United States",
+      });
+      setStates(data.data.states);
+    } catch (err) {
+      console.log(err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStates();
+  }, [fetchStates]);
+
   return (
     <Box display="flex" flexDirection="column" height="100vh">
-      <div className="autocomplete">
-        <AutoComplete
-          icon={<FlightTakeoff />}
-          label="From"
-          setPlace={(position) => {
-            setFrom(position);
-            mapRef.current?.panTo(position);
-          }}
-        />
-        <AutoComplete
-          icon={<FlightLand />}
-          label="To"
-          setPlace={(position) => {
-            setTo(position);
-            mapRef.current?.panTo(position);
-          }}
-        />
-      </div>
-
+      {states.length !== 0 && (
+        <Box display="flex" justifyContent="center" padding="10px">
+          <SelectStates options={states} setState={setState} state={state} />
+        </Box>
+      )}
+      {state !== "" && (
+        <div className="autocomplete">
+          <AutoComplete
+            filter={state}
+            icon={<FlightTakeoff />}
+            label="From"
+            setPlace={(position) => {
+              setFrom(position);
+              mapRef.current?.panTo(position);
+            }}
+          />
+          <AutoComplete
+            filter={state}
+            icon={<FlightLand />}
+            label="To"
+            setPlace={(position) => {
+              setTo(position);
+              mapRef.current?.panTo(position);
+            }}
+          />
+        </div>
+      )}
       <GoogleMap
         zoom={10}
         center={center}
@@ -125,4 +157,5 @@ export const Map = () => {
 
 const polyCofiguration = {
   strokeColor: "#d11d1d",
+  zIndex: 20,
 };
